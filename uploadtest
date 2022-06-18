@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun  4 12:40:07 2022
+
+@author: tup0lev
+"""
+
+from biliup.plugins.bili_webup import BiliBili, Data
+
+
+
+def upload():
+    video = Data()
+    video.title = "asdf"
+    video.desc = "asdf"
+    video.source = "asdf"
+    # 设置视频分区,默认为122 野生技能协会
+    video.tid = 171
+  ##  video.set_tag(['星际争霸2', '电子竞技'])
+    with BiliBili(video) as bili:
+        bili.login("bili.cookie", {
+            'cookies':{
+                'SESSDATA': '606a5ef8%2C1666695853%2Cc0f57%2A41',
+                'bili_jct': '367ae89cd01af60eaf4e7fcbaec73d71',
+                'DedeUserID__ckMd5': '6bf640251dfdfc52',
+                'DedeUserID': '2087764486'
+            },'access_token': '3c4e87783c11c12b9dd3d1e26db20841'})
+     #   bili.login_by_password("173486909666", "Pilipili")
+      #  for file in file_list:
+        video_part = bili.upload_file("Download.mp4")  # 上传视频
+         #   video.append(video_part)  # 添加已经上传的视频
+       # video.cover = bili.cover_up('/cover_path').replace('http:', '')
+        ret = bili.submit()  # 提交视频
+        
+upload()

@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 18 19:56:48 2022
+
+@author: tup0lev
+"""
+
+
+from __future__ import unicode_literals
+from googletrans import Translator, constants
+from pprint import pprint
+import random
+from biliup.plugins.bili_webup import BiliBili, Data
+from bs4 import BeautifulSoup
+import urllib.request
+import re
+from google.cloud import translate_v2
+import youtube_dl
+import os
+import ffmpeg
+
+
+def fuckupvid():
+    stream = ffmpeg.input('Download.mp4')
+    bgm = ffmpeg.input('bgm.aac')
+    
+ #   print("掐头去尾")
+    
+    probe = ffmpeg.probe('Download.mp4')
+    video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+#    print(video_info)
+ #   num_frames= int(video_info['nb_frames'])
+    
+    
+#    stream = stream.trim(start_frame=round(num_frames*0.1), end_frame=round(num_frames*0.9))
+        
+    print("镜像")
+    stream = ffmpeg.hflip(stream)
+    
+    print("随机添加弱智bgm")
+    
+    duration = (video_info['duration'])
+    bgmprobe = ffmpeg.probe('bgm.aac')
+    bgm_info = next(s for s in bgmprobe['streams'] if s['codec_type'] == 'audio')
+    bgmduration =(bgm_info['duration'])
+  #  print(bgm_info)
+    bgmduration = round(float(bgmduration))
+    print("bgmduration" ,bgmduration)
+    duration = round(float(duration))
+    bgm = bgm.trim(start=random.randint(0, bgmduration-duration), end=bgmduration)
+ #   bgm = bgm.trim(start = 0, end = duration)
+ #   bgm = bgm.audio.filter('atrim', duration=random.randint(0, ))
+#    bgm = bgm.audio.filter('atrim', duration=duration)
+    bgm = ffmpeg.output(bgm, 'tmp.aac')
+    ffmpeg.run(bgm)
+    newbgm = ffmpeg.input('tmp.aac')
+    stream = ffmpeg.concat(stream, newbgm, v=1, a=1)
+    stream = ffmpeg.output(stream, 'output.mp4')
+    ffmpeg.run(stream)
+fuckupvid()
+probe = ffmpeg.probe('output.mp4')
+video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+num_frames= int(video_info['nb_frames'])
+print(num_frames)
