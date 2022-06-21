@@ -9,4 +9,6 @@ readame will be populated after coding is finished
 这一切都能用脚本完成  
 所以爷就想了这么一个烂活  
 
+现在可以自动下载、镜像、切片、机翻标题了  
+
 写完之后再写radme  
