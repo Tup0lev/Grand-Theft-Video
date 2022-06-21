@@ -29,29 +29,31 @@ def fuckupvid():
     
     probe = ffmpeg.probe('Download.mp4')
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
-#    print(video_info)
- #   num_frames= int(video_info['nb_frames'])
+    print(video_info)
+    num_frames= int(video_info['nb_frames'])
     
     
-#    stream = stream.trim(start_frame=round(num_frames*0.1), end_frame=round(num_frames*0.9))
+    stream = stream.trim(start_frame=round(num_frames*0.1), end_frame=round(num_frames*0.9))
         
     print("镜像")
     stream = ffmpeg.hflip(stream)
     
     print("随机添加弱智bgm")
-    
+        
     duration = (video_info['duration'])
     bgmprobe = ffmpeg.probe('bgm.aac')
     bgm_info = next(s for s in bgmprobe['streams'] if s['codec_type'] == 'audio')
     bgmduration =(bgm_info['duration'])
-  #  print(bgm_info)
+    print(bgm_info)
+   # bgmframes = int(bgm_info['nb_frames'])
+   
     bgmduration = round(float(bgmduration))
+    
     print("bgmduration" ,bgmduration)
     duration = round(float(duration))
-    bgm = bgm.trim(start=random.randint(0, bgmduration-duration), end=bgmduration)
- #   bgm = bgm.trim(start = 0, end = duration)
- #   bgm = bgm.audio.filter('atrim', duration=random.randint(0, ))
-#    bgm = bgm.audio.filter('atrim', duration=duration)
+    bgmtrimstart = random.randint(0, bgmduration - duration)
+    bgm = bgm.audio.filter('atrim', start = bgmtrimstart,
+                           end = bgmtrimstart + duration)
     bgm = ffmpeg.output(bgm, 'tmp.aac')
     ffmpeg.run(bgm)
     newbgm = ffmpeg.input('tmp.aac')

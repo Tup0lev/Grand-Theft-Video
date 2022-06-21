@@ -17,7 +17,7 @@ import re
 from google.cloud import translate_v2
 import youtube_dl
 import os
-from .uploader import upload
+#from .uploader import upload
 import ffmpeg
 
 def getVid(): # get random youtube video
@@ -64,14 +64,18 @@ def validateVid(vidurl, title):
     if (translator.detect(title).lang) != "en" :
         print("Not ENG")
         return False
-    translation = translator.translate(title, dest='zh-CN')    
-    print("机翻完了的超尬标题是: " + translation.text)
+    
+    print("机翻完了的超尬标题是: " + translateTitle(title))
     print("开始简单审查视频-关键词匹配")
     #TODO 
     #暂时先8做这个了
     print("顺利通过成分检查")
     return True 
 
+def translateTitle(title):
+    translator = Translator()
+    translation = translator.translate(title, dest='zh-CN')    
+    return translation.text
 
 def downloadVid(vidurl):
     print("下载视频")
@@ -91,24 +95,49 @@ def downloadVid(vidurl):
     pass
 
 
+
+
 def fuckupvid():
     stream = ffmpeg.input('Download.mp4')
+    bgm = ffmpeg.input('bgm.aac')
     
-    
-    print("掐头去尾")
+ #   print("掐头去尾")
     
     probe = ffmpeg.probe('Download.mp4')
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    print(video_info)
     num_frames= int(video_info['nb_frames'])
     
-    stream = ffmpeg.concat(
-        in_file.trim(start_frame=10, end_frame=20),
-        in_file.trim(start_frame=30, end_frame=40),
-    )
     
-    
-    
+    stream = stream.trim(start_frame=round(num_frames*0.1), end_frame=round(num_frames*0.9))
+        
+    print("镜像")
     stream = ffmpeg.hflip(stream)
+    
+    print("随机添加弱智bgm")
+        
+    duration = (video_info['duration'])
+    bgmprobe = ffmpeg.probe('bgm.aac')
+    bgm_info = next(s for s in bgmprobe['streams'] if s['codec_type'] == 'audio')
+    bgmduration =(bgm_info['duration'])
+    print(bgm_info)
+   # bgmframes = int(bgm_info['nb_frames'])
+   
+    bgmduration = round(float(bgmduration))
+    
+    print("bgmduration" ,bgmduration)
+    duration = round(float(duration))
+    bgmtrimstart = random.randint(0, bgmduration - duration)
+    bgm = bgm.audio.filter('atrim', start = bgmtrimstart,
+                           end = bgmtrimstart + duration)
+    bgm = ffmpeg.output(bgm, 'tmp.aac')
+    ffmpeg.run(bgm)
+    newbgm = ffmpeg.input('tmp.aac')
+    stream = ffmpeg.concat(stream, newbgm, v=1, a=1)
+    stream = ffmpeg.output(stream, 'output.mp4')
+    ffmpeg.run(stream)
+    
+    
 
 def uploadvid(vidurl, title):
     print("上传视频到霹雳霹雳")
@@ -140,6 +169,8 @@ def uploadvid(vidurl, title):
 while (True):
     try:
         os.remove("Download.mp4")
+        os.remove("tmp.aac")
+        os.remove('output.mp4')
     except Exception:
         pass
 
@@ -147,13 +178,20 @@ while (True):
     
     if ( validateVid(vidurl, vidtitle) ): #审查视频
         downloadVid(vidurl)
-       
-    #    os.rename('Download.mp4',  vidtitle + ".mp4"  )
+        fuckupvid()
         
+        
+        os.rename('output.mp4', translateTitle(vidtitle) + ".mp4")
+        
+    #    os.rename('Download.mp4',  vidtitle + ".mp4"  )
+    
     try:
         os.remove("Download.mp4")
+        os.remove("tmp.aac")
+        os.remove('output.mp4')
     except Exception:
         pass
-
+  
+    
 def transcoding(data):
     pass
